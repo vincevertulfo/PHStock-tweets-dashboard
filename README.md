@@ -13,6 +13,8 @@ This repository contains two main python scripts:
 
 #### Usage
 ```
+account_check = ['2TradeAsia']
+
 user_cred = TwitterCreds(consumer_key, consumer_secret, access_token, access_secret)
 
 client = user_cred.authorize_twitter()
@@ -37,5 +39,9 @@ Now that you have data available, you can run the Streamlit app and checkout the
 streamlit run app.py
 
 ```
+
+This how the dashboard will look like once you've successfully scraped the tweets and ran the Streamlit app. 
+
+![Demo video](img/app · Streamlit.gif)
 
 follow me on [LinkedIn](https://www.linkedin.com/in/joseph-vince-vertulfo-65bb6a102/)!
