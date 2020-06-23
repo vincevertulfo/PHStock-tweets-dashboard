@@ -42,6 +42,6 @@ streamlit run app.py
 
 This how the dashboard will look like once you've successfully scraped the tweets and ran the Streamlit app. 
 
-![Demo video](img/app · Streamlit.gif)
+![Demo video](img/Streamlit.gif)
 
 follow me on [LinkedIn](https://www.linkedin.com/in/joseph-vince-vertulfo-65bb6a102/)!
