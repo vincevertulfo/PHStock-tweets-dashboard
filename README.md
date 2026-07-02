@@ -32,6 +32,8 @@ cleaned_tweet_df = accounts.clean_tweet_df(tweet_df)
 
 After running, you should see a new folder in your current directory named "datasets".
 
+You can also drop reviewed Twitter/X export CSVs into the `datasets` folder. The dashboard now accepts common export headers such as `text`, `content`, `renderedContent`, `created_at`, `date`, `username`, `author.username`, `cashtag`, `cashtags`, and `ticker`, including CSVs prepared from TweetClaw review exports. If a stock column is missing, the app extracts the first `$CASHTAG` from the tweet text and groups rows without a symbol under `$UNKNOWN`.
+
 Now that you have data available, you can run the Streamlit app and checkout the dashboard. (Make sure you have Streamlit installed in your environment)
 
 #### Usage

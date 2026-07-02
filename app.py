@@ -15,6 +15,57 @@ import fastquant as fq
 from fastquant import get_stock_data
 
 
+TEXT_COLUMNS = ["cleaned_tweet", "tweet", "text", "content", "renderedContent", "full_text"]
+DATE_COLUMNS = ["tweet_created_at", "created_at", "createdAt", "date", "timestamp"]
+USER_COLUMNS = ["username", "screen_name", "author.username", "user.username", "handle"]
+STOCK_COLUMNS = ["stock_code", "cashtag", "cashtags", "symbol", "ticker"]
+
+
+def _first_existing_column(df, candidates):
+  for column in candidates:
+    if column in df.columns:
+      return column
+  return None
+
+
+def _first_stock_symbol(value):
+  if pd.isna(value):
+    return "$UNKNOWN"
+  if isinstance(value, str):
+    for token in value.replace(",", " ").split():
+      if token.startswith("$") and len(token) > 1:
+        return token.upper()
+    stripped = value.strip()
+    if stripped:
+      return stripped.upper() if stripped.startswith("$") else f"${stripped.upper()}"
+  return "$UNKNOWN"
+
+
+def _normalize_tweet_export(df):
+  normalized = df.copy()
+
+  text_column = _first_existing_column(normalized, TEXT_COLUMNS)
+  if text_column and "cleaned_tweet" not in normalized.columns:
+    normalized["cleaned_tweet"] = normalized[text_column].fillna("").astype(str)
+
+  date_column = _first_existing_column(normalized, DATE_COLUMNS)
+  if date_column and "tweet_created_at" not in normalized.columns:
+    normalized["tweet_created_at"] = normalized[date_column]
+
+  user_column = _first_existing_column(normalized, USER_COLUMNS)
+  if user_column and "username" not in normalized.columns:
+    normalized["username"] = normalized[user_column].fillna("unknown").astype(str).str.lstrip("@")
+
+  stock_column = _first_existing_column(normalized, STOCK_COLUMNS)
+  if stock_column and "stock_code" not in normalized.columns:
+    normalized["stock_code"] = normalized[stock_column].apply(_first_stock_symbol)
+
+  if "stock_code" not in normalized.columns and text_column:
+    normalized["stock_code"] = normalized[text_column].apply(_first_stock_symbol)
+
+  return normalized
+
+
 st.markdown(f"<h1 style='color: black;'> Stock Tweets Dashboard! </h1>", unsafe_allow_html=True)
 st.markdown(f"<p style='color: black; font-size: large'>This dashboard visualizes recent news about stocks from various twitter accounts. </p>", unsafe_allow_html=True)
 
@@ -24,7 +75,7 @@ st.sidebar.markdown("Use these filters to explore the data!")
 
 # NOTE: Check if directory contains datasets
 
-if(len(os.listdir('datasets')) == 0):
+if not os.path.isdir('datasets') or len(glob.glob('datasets/*.csv')) == 0:
 
   st.markdown("No datasets available")
 
@@ -32,7 +83,8 @@ else:
 
   @st.cache(persist=True)
   def load_data():
-    df = pd.concat(map(pd.read_csv, glob.glob('datasets/*.csv')))
+    datasets = [_normalize_tweet_export(pd.read_csv(csv_path)) for csv_path in glob.glob('datasets/*.csv')]
+    df = pd.concat(datasets, ignore_index=True)
     df['tweet_created_at'] = pd.to_datetime(df['tweet_created_at'])
     return df
 
